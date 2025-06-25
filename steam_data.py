@@ -175,7 +175,8 @@ def get_achievements_from_game(appid: int, print_response: bool = False) -> dict
     achievement_status = {}
     for achievement in achievements:
         achievement_status[achievement["apiname"].replace("_", " ")] = (
-            f"Achieved on {unix_to_datetime(achievement["unlocktime"])}"
+            f"Achieved on {datetime.fromtimestamp(achievement["unlocktime"],
+                                                  tz=timezone.utc).strftime("%B %-d, %Y")}"
             if achievement["achieved"]
             else "Not Achieved"
         )
@@ -184,22 +185,6 @@ def get_achievements_from_game(appid: int, print_response: bool = False) -> dict
         for name, status in achievement_status.items():
             print(f"{name}: {status}")
     return achievement_status
-
-
-def unix_to_datetime(unix_timestamp: int) -> str:
-    """
-    Converts a Unix timestamp (seconds since epoch) to a human-readable date string
-    (UTC, e.g., March 5, 2024).
-
-    Args:
-        unix_timestamp (int): The Unix timestamp to convert.
-
-    Returns:
-        str: The corresponding date string in UTC.
-    """
-    return datetime.fromtimestamp(unix_timestamp, tz=timezone.utc).strftime(
-        "%B %-d, %Y"
-    )
 
 
 get_achievements_from_game(1172380, True)
