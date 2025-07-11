@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Steam Game Playtime</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+  <body>
+    <h1>Steam Game Playtime For {{ user_name }}</h1>
+    <form method="get">
+      <input
+        type="text"
+        name="steamid"
+        placeholder="Enter Steam ID"
+        value="{{ steamid }}"
+      />
+      <input type="submit" value="Lookup" />
+    </form>
+    <table>
+      <tr>
+        <th>Game</th>
+        <th>Hours Played</th>
+      </tr>
+      {% for game in games %}
+      <tr>
+        <td>{{ game['title'] }}</td>
+        <td>{{ game['hours'] }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </body>
+</html>
