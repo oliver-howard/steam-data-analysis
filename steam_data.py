@@ -81,7 +81,7 @@ def get_data_from_api(url, params=None) -> dict:
     return data
 
 
-def get_playtime_data(print_response: bool = False) -> dict:
+def get_playtime_data(steam_id=STEAM_ID, print_response: bool = False) -> dict:
     """
     Fetches and processes playtime data for games from a remote API.
 
@@ -103,7 +103,7 @@ def get_playtime_data(print_response: bool = False) -> dict:
     """
     params = {
         "key": API_KEY,
-        "steamid": STEAM_ID,
+        "steamid": steam_id,
         "format": "json",
         "include_appinfo": True,
     }
@@ -112,7 +112,7 @@ def get_playtime_data(print_response: bool = False) -> dict:
         params=params,
     )
     sorted_games = sorted(
-        data["response"]["games"], key=lambda x: x["playtime_forever"], reverse=False
+        data["response"]["games"], key=lambda x: x["playtime_forever"], reverse=True
     )
     play_time = {}
     for game in sorted_games:
@@ -126,7 +126,7 @@ def get_playtime_data(print_response: bool = False) -> dict:
     return play_time
 
 
-def get_user_info(print_response: bool = False) -> dict:
+def get_user_info(steamid=STEAM_ID, print_response: bool = False) -> dict:
     """
     Fetches user information from the Steam API.
 
@@ -136,7 +136,7 @@ def get_user_info(print_response: bool = False) -> dict:
     """
     params = {
         "key": API_KEY,
-        "steamids": STEAM_ID,
+        "steamids": steamid,
         "format": "json",
     }
     data = get_data_from_api(
@@ -187,4 +187,105 @@ def get_achievements_from_game(appid: int, print_response: bool = False) -> dict
     return achievement_status
 
 
-get_achievements_from_game(1172380, True)
+## data_test = get_playtime_data()
+# print(data_test)
+
+# --- Flask Web App ---
+from flask import Flask, render_template_string
+
+app = Flask(__name__)
+
+
+@app.route("/", methods=["GET", "POST"])
+def home():
+    from flask import request
+
+    steamid = request.args.get("steamid", STEAM_ID)
+    playtime_data = get_playtime_data(steamid)
+    user_info = get_user_info(steamid)
+    user_name = user_info.get("personaname", "Unknown User")
+    html = """
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Steam Game Playtime</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #171a21;
+            margin: 0;
+            padding: 2rem;
+        }
+        h1 {
+            text-align: center;
+            color: #c7d5e0;
+        }
+        form {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        input[type="text"] {
+            padding: 0.5rem;
+            font-size: 1rem;
+            border-radius: 4px;
+            border: 1px solid #1b2838;
+            margin-right: 0.5rem;
+        }
+        input[type="submit"] {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            border-radius: 4px;
+            border: none;
+            background-color: #1b2838;
+            color: white;
+            cursor: pointer;
+        }
+        table {
+            margin: 2rem auto;
+            border-collapse: collapse;
+            width: 80%;
+            background-color: #2a475e;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            color: #c7d5e0;
+            border-bottom: 1px solid #1b2838;
+        }
+        th {
+            background-color: #1b2838;
+            color: white;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+    <h1>Steam Game Playtime For {{ user_name }}</h1>
+    <form method="get">
+        <input type="text" name="steamid" placeholder="Enter Steam ID" value="{{ steamid }}">
+        <input type="submit" value="Lookup">
+    </form>
+    <table>
+        <tr><th>Game</th><th>Hours Played</th></tr>
+        {% for game in games %}
+        <tr>
+            <td>{{ game['title'] }}</td>
+            <td>{{ game['hours'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
+"""
+    return render_template_string(
+        html, games=playtime_data.values(), user_name=user_name, steamid=steamid
+    )
+
+
+if __name__ == "__main__":
+    print(get_user_info(STEAM_ID))
+    app.run(debug=False)
