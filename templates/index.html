@@ -9,13 +9,12 @@
     />
   </head>
   <body>
-    <h1>Steam Game Playtime For {{ user_name }}</h1>
+    <h1>{{ header_message }}</h1>
     <form method="get">
       <input
         type="text"
         name="steamid"
         placeholder="Enter Steam ID"
-        value="{{ steamid }}"
       />
       <input type="submit" value="Lookup" />
     </form>

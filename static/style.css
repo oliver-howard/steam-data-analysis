@@ -28,6 +28,9 @@ input[type="submit"] {
   color: white;
   cursor: pointer;
 }
+input[type="submit"]:hover {
+  background-color: #2a475e;
+}
 table {
   margin: 2rem auto;
   border-collapse: collapse;

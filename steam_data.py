@@ -35,10 +35,11 @@ Example Usage:
 
 from datetime import datetime, timezone
 import requests
+from flask import Flask, render_template, request
 
 
 API_KEY = "4D564D7028D70C861936DCF1C09BC797"
-STEAM_ID = "76561198839172366"
+STEAM_ID = "76561198839172366"  # r0mb0's Steam ID
 POSSIBLE_DATA = {
     "user_info": "GetPlayerSummaries",
     "freinds": "GetFriendList",
@@ -126,7 +127,7 @@ def get_playtime_data(steam_id=STEAM_ID, print_response: bool = False) -> dict:
     return play_time
 
 
-def get_user_info(steamid=STEAM_ID, print_response: bool = False) -> dict:
+def get_user_info(steamid, print_response: bool = False) -> dict:
     """
     Fetches user information from the Steam API.
 
@@ -187,26 +188,35 @@ def get_achievements_from_game(appid: int, print_response: bool = False) -> dict
     return achievement_status
 
 
-## data_test = get_playtime_data()
-# print(data_test)
-
 # --- Flask Web App ---
-from flask import Flask, render_template, request
-
 app = Flask(__name__)
 
 
 @app.route("/", methods=["GET", "POST"])
 def home():
-    steamid = request.args.get("steamid", STEAM_ID)
-    playtime_data = get_playtime_data(steamid)
-    user_info = get_user_info(steamid)
-    user_name = user_info.get("personaname", "Unknown User")
+    steamid = request.args.get("steamid")
+    if steamid:
+        # Only fetch data if a steamid is provided
+        playtime_data = get_playtime_data(steamid)
+        user_info = get_user_info(steamid)
+        user_name = user_info.get("personaname", "Unknown User")
+        games = playtime_data.values()
+        header_message = f"Steam Game Playtime For {user_name}"
+    else:
+        # No steamid provided, show empty form
+        user_name = "Enter a Steam ID"
+        games = []
+        steamid = ""
+        header_message = "Steam Game Playtime"
+
     return render_template(
-        "index.html", games=playtime_data.values(), user_name=user_name, steamid=steamid
+        "index.html",
+        games=games,
+        user_name=user_name,
+        steamid=steamid,
+        header_message=header_message,
     )
 
 
 if __name__ == "__main__":
-    print(get_user_info(STEAM_ID))
     app.run(debug=False)
