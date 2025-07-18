@@ -1,7 +1,3 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Project Overview
 
 This is a Flask web application that displays Steam game playtime data. The application allows users to enter a Steam ID and view their gaming statistics in a web interface.
